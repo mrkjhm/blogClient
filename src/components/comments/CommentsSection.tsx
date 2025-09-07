@@ -9,7 +9,7 @@ export default function CommentsSection({ postId }: { postId: string }) {
   const { nodes, loading, error, refresh } = useComments(postId);
 
   return (
-    <section>
+    <section className="max-w-4xl mx-auto">
       <CommentForm postId={postId} onAdded={refresh} />
       {loading && <p className="text-sm text-gray-500">Loading comments…</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
