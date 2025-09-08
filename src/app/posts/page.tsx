@@ -1,7 +1,7 @@
 "use client";
 
 import axios, { AxiosError } from "axios";
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion'; // 🆕 Added AnimatePresence
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,18 +12,19 @@ import Container from "@/components/ui/Container";
 import { Post } from "@/types/post";
 
 export default function Page() {
-
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null); // 🆕 Track hovered card
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const result = await axios.get<Post[]>(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/posts`
+          `${API_URL}/api/posts`
         );
         setPosts(result.data);
       } catch (err: unknown) {
@@ -36,7 +37,6 @@ export default function Page() {
     fetchPosts();
   }, []);
 
-  // Ensure current page is valid when posts change
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
     if (currentPage > totalPages) setCurrentPage(totalPages);
@@ -46,14 +46,13 @@ export default function Page() {
   const startIndex = (currentPage - 1) * pageSize;
   const visiblePosts = posts.slice(startIndex, startIndex + pageSize);
 
-
   return (
     <Container className="mt-10">
-      <div className="space-y-6">
+      <motion.div className="space-y-6">
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
           className="font-bold leading-[1.18] tracking-[-0.02em] text-[clamp(1rem,4vw+0.5rem,2rem)] text-center">
           All Post
         </motion.h1>
@@ -71,12 +70,15 @@ export default function Page() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   delay: 0.1 * index, // ✅ Add stagger delay based on index
-                  duration: 0.4,
+                  duration: 0.3,
                   ease: "easeOut"
                 }}
-              >
+                onMouseEnter={() => setHoveredCard(post._id)} // 🆕 Set hover
+                onMouseLeave={() => setHoveredCard(null)}     // 🆕 Clear hover
+                whileHover={{ scale: 1.02 }}
 
-                <Card key={post._id} className="p-5 hover:scale-102 transition-all duration-300 br">
+              >
+                <Card className="p-5 relative hover:scale-102 transition-all duration-300">
                   <Link href={`/posts/${post.slug}`} className="block">
                     <div className="w-full aspect-[16/9] overflow-hidden rounded-lg">
                       <Image
@@ -88,21 +90,19 @@ export default function Page() {
                       />
                     </div>
                   </Link>
+
                   {post.category && (
-                    <CardDescription className="inline-block w-fit py-1  rounded-md text-blue-600 font-bold">
+                    <CardDescription className="inline-block w-fit py-1 rounded-md text-blue-600 font-bold">
                       {post.category}
                     </CardDescription>
                   )}
+
                   <CardHeader className="mb-5">
-                    <CardTitle className="line-clamp-2">
-                      <Link
-                        href={`/posts/${post.slug}`}
-                        className="hover:underline inline w-auto"
-                      >
+                    <CardTitle className="line-clamp-1">
+                      <Link href={`/posts/${post.slug}`} className="hover:underline inline w-auto">
                         {post.title}
                       </Link>
                     </CardTitle>
-
                     {post.description && (
                       <p className="text-sm text-gray-600 line-clamp-2">
                         {post.description}
@@ -110,10 +110,28 @@ export default function Page() {
                     )}
                   </CardHeader>
 
+                  {/* 🆕 Animated floating title shown only when hovered */}
+                  <AnimatePresence>
+                    {hoveredCard === post._id && (
+                      <motion.div
+                        initial={{ scale: 0.5, rotate: '0deg', opacity: 0 }}
+                        animate={{ scale: 1, rotate: '-3deg', opacity: 1 }}
+                        exit={{ scale: 0.5, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="absolute z-10 top-0 -left-2"
+                      >
+                        <CardTitle className="bg-blue-600 px-5 py-2 rounded-md text-white shadow-lg">
+                          <h1 className="text-2xl text-center">
+                            {post.title}
+                          </h1>
+                        </CardTitle>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <CardFooter className="flex items-center justify-between text-gray-400">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-2 items-center">
-
                         <Avatar>
                           <AvatarImage
                             src={typeof post.author === 'object' ? (post.author.avatarUrl || "") : ""}
@@ -122,7 +140,7 @@ export default function Page() {
                           />
                           <AvatarFallback>{typeof post.author === 'object' ? post.author.name?.[0]?.toUpperCase() : 'Unknown'}</AvatarFallback>
                         </Avatar>
-                        <p className="text-sm">by: <span className="capitalize"> {typeof post.author === 'object' ? post.author.name : 'Unknown Author'}</span></p>
+                        <p className="text-sm">by: <span className="capitalize">{typeof post.author === 'object' ? post.author.name : 'Unknown Author'}</span></p>
                       </div>
                     </div>
                     <p className="text-sm">
@@ -134,14 +152,9 @@ export default function Page() {
                       })}
                     </p>
                   </CardFooter>
-
-                  {/* <CardAction className="cursor-pointer text-primary  text-sm border border-primary min-w-full px-2 py-2 rounded-md text-center">
-                  <Link href={`/posts/${post.slug}`}>Read More</Link>
-                </CardAction> */}
                 </Card>
               </motion.div>
             ))}
-
           </div>
         )}
 
@@ -166,10 +179,7 @@ export default function Page() {
             </button>
           </div>
         )}
-      </div>
-
-    </Container >
-  )
+      </motion.div>
+    </Container>
+  );
 }
-
-

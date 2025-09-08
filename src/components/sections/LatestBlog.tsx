@@ -1,7 +1,7 @@
 // components/home/LatestBlog.tsx
 "use client";
 
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -15,7 +15,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 export default function LatestBlog() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 
   useEffect(() => {
     (async () => {
@@ -37,7 +43,14 @@ export default function LatestBlog() {
   }, [API_URL]);
 
   return (
-    <Container className="p-10 mt-10">
+    <Container className="p-10">
+      <motion.div
+        initial='initial'
+        whileHover='whileHover'
+        className='space-y-6'
+      >
+
+      </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,9 +71,12 @@ export default function LatestBlog() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               delay: 0.1 * index, // ✅ Add stagger delay based on index
-              duration: 0.4,
+              duration: 0.3,
               ease: "easeOut"
             }}
+            onMouseEnter={() => setHoveredCard(post._id)} // 🆕 Set hover
+            onMouseLeave={() => setHoveredCard(null)}     // 🆕 Clear hover
+            whileHover={{ scale: 1.02 }}
           >
             <Card className="p-5 hover:scale-102 transition-all duration-300">
               <Link href={`/posts/${post.slug}`} className="block">
@@ -74,19 +90,39 @@ export default function LatestBlog() {
                   />
                 </div>
               </Link>
+
               <CardHeader>
                 {post.category && (
                   <CardDescription className="inline-block w-fit py-1 rounded-md text-blue-600 font-bold">
                     {post.category}
                   </CardDescription>
                 )}
-                <CardTitle className="line-clamp-2">
+                <CardTitle className="line-clamp-1">
                   <Link href={`/posts/${post.slug}`} className="hover:underline inline w-auto">
                     {post.title}
                   </Link>
                 </CardTitle>
                 <p className="text-sm text-gray-600 line-clamp-2">{post.description}</p>
               </CardHeader>
+
+              <AnimatePresence>
+                {hoveredCard === post._id && (
+                  <motion.div
+                    initial={{ scale: 0.5, rotate: '0deg', opacity: 0 }}
+                    animate={{ scale: 1, rotate: '-5deg', opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="absolute z-10 top-0 left-0"
+                  >
+                    <CardTitle className="bg-blue-600 px-5 py-2 rounded-md text-white shadow-lg">
+                      <h1 className="text-2xl text-center">
+                        {post.title}
+                      </h1>
+                    </CardTitle>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <CardFooter className="flex gap-2 justify-between mt-4 text-gray-400">
                 <div className="flex gap-2 items-center">
                   <div className="h-10 w-10 flex justify-center items-center rounded-full overflow-hidden bg-gray-100">
@@ -124,7 +160,7 @@ export default function LatestBlog() {
       <div className="flex justify-center">
         <Link
           href="/posts"
-          className="text-center px-4 py-2 border rounded-md border-gray-300 inline-block"
+          className="text-center px-4 py-2 border rounded-md border-gray-300 inline-block hover:bg-primary hover:text-white transition-all duration-300"
         >
           View All Post
         </Link>
@@ -133,18 +169,4 @@ export default function LatestBlog() {
   );
 }
 
-// Optional reusable avatar image (not used in current layout)
-function AuthorAvatarImage({ src, alt }: { src: string | null | undefined; alt: string }) {
-  const [error, setError] = useState(false);
-  const displaySrc = !error && src ? src : "/images/avatar-placeholder.png";
-  return (
-    <Image
-      src={displaySrc}
-      alt={alt}
-      width={40}
-      height={40}
-      className="h-full w-full object-cover"
-      onError={() => setError(true)}
-    />
-  );
-}
+

@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Post } from "@/types/post";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Card } from "../ui/card";
 import Container from "../ui/Container";
 
 export default function Hero() {
@@ -37,8 +36,68 @@ export default function Hero() {
 
   return (
 
-    <Container className="py-5 mb-20">
-      <div className="relative">
+    <div className="py-5 bg-gray-200">
+      <Container>
+
+
+        <div className="relative my-20">
+          {posts.map((post) => (
+            <div key={post._id}>
+              <div className="lg:flex gap-5">
+                <Link href={`/posts/${post.slug}`} className="block">
+                  <div className="object-cover overflow-hidden rounded-lg lg:mb-0 mb-6">
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.title}
+                      width={600}
+                      height={400}
+                      className="lg:w-180 w-full hover:scale-102 transition-all duration-300"
+                    />
+                  </div>
+                </Link>
+                <div className="lg:w-1/2 w-full space-y-7">
+                  <p className="inline-block w-fit py-1  rounded-md text-blue-600 font-bold">
+                    {post.category}
+                  </p>
+                  <h1 className=" font-bold leading-[1.18] tracking-[-0.02em]  text-[clamp(1rem,2vw+0.5rem,2rem)]">
+                    <Link href={`/posts/${post.slug}`} className="inline w-auto hover:underline ">
+                      {post.title}
+                    </Link>
+                  </h1>
+                  <p>{post.description}</p>
+                  <div className="flex gap-3 items-center mt-4 text-gray-500">
+                    <div className="flex gap-2 items-center">
+                      <div className="h-10 w-10 items-center flex justify-center rounded-full overflow-hidden bg-gray-100">
+                        <Avatar>
+                          <AvatarImage
+                            src={typeof post.author === 'object' ? (post.author.avatarUrl || "") : ""}
+                            alt={typeof post.author === 'object' ? (post.author.name || "Avatar") : "Avatar"}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                          <AvatarFallback>{typeof post.author === 'object' ? post.author.name?.[0]?.toUpperCase?.() : 'Unknown'}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <p>by: <span className="capitalize">{typeof post.author === "object" && post.author ? post.author.name : "Unknown Author"}</span></p>
+                    </div>
+                    <p className="text-sm">
+                      <i className="ri-calendar-line mr-2"></i>
+                      {new Date(post.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          ))}
+
+        </div>
+
+
+        {/* <div className="relative">
         {posts.map((post) => (
           <Card key={post._id}>
             <Link href={`/posts/${post.slug}`} className="block">
@@ -89,23 +148,11 @@ export default function Hero() {
             </div>
           </Card>
         ))}
-      </div>
-    </Container>
+      </div> */}
+
+      </Container>
+    </div>
 
   );
 }
 
-function AuthorAvatarImage({ src, alt }: { src: string | null | undefined; alt: string }) {
-  const [error, setError] = useState(false);
-  const displaySrc = !error && src ? src : "/images/avatar-placeholder.png";
-  return (
-    <Image
-      src={displaySrc}
-      alt={alt}
-      width={40}
-      height={40}
-      className="h-full w-full object-cover"
-      onError={() => setError(true)}
-    />
-  );
-}

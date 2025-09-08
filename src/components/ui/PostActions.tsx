@@ -82,7 +82,7 @@ export default function PostActions({ post, className, showEdit = true, onDelete
     <div className={`flex gap-3 ${className || ""}`}>
       <button
         onClick={confirmDelete}
-        className="px-3 py-1 text-sm rounded border border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
+        className="px-3 py-1 text-sm rounded border border-red-300 text-red-600  disabled:opacity-50 cursor-pointer"
         disabled={loading}
         aria-label={`Delete post: ${post.title}`}
       >

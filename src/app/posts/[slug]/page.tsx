@@ -228,7 +228,7 @@ export default function PostPage({ params }: BlogPageProps) {
   return (
     <Container className="py-10">
       <div className="space-y-4">
-        <div className="max-w-4xl mx-auto px-4 py-8 prose prose-lg">
+        <div className="max-w-4xl mx-auto py-8 prose prose-lg">
           <div className="flex justify-between items-center">
             {isEditing ? (
               <input
@@ -248,7 +248,7 @@ export default function PostPage({ params }: BlogPageProps) {
                 {!isEditing ? (
                   <button
                     onClick={startEditing}
-                    className="bg-blue-600 text-white py-1 px-2 rounded hover:bg-blue-700"
+                    className="bg-primary text-white py-1 px-2 rounded cursor-pointer"
                   >
                     Edit Post
                   </button>
@@ -289,7 +289,7 @@ export default function PostPage({ params }: BlogPageProps) {
                 placeholder="Post Title"
               />
             ) : (
-              <h1 className="font-bold leading-[1.18] tracking-[-0.02em] text-[clamp(1rem,4vw+0.5rem,2.5rem)] my-3">{post.title}</h1>
+              <h1 className="font-bold leading-[1.18] tracking-[-0.02em] text-[clamp(1rem,4vw+0.5rem,2.5rem)] my-3 mb-10 ">{post.title}</h1>
 
             )}
 
@@ -371,7 +371,7 @@ export default function PostPage({ params }: BlogPageProps) {
           <Image src={post.imageUrl} alt={post.title} width={600} height={400} className="w-full rounded-2xl" />
         )}
 
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto py-8">
           {isEditing ? (
             <RichMarkdown value={content} onChange={setContent} />
           ) : (
