@@ -52,11 +52,11 @@ export default function PostPage({ params }: BlogPageProps) {
   );
 
   // Debug logging
-  console.log('Post Page Debug:', {
-    user: user ? { id: user._id, isAdmin: user.isAdmin } : null,
-    postAuthor: author || post?.author,
-    canModify
-  });
+  // console.log('Post Page Debug:', {
+  //   user: user ? { id: user._id, isAdmin: user.isAdmin } : null,
+  //   postAuthor: author || post?.author,
+  //   canModify
+  // });
 
   async function fetchPost() {
     try {
@@ -194,8 +194,8 @@ export default function PostPage({ params }: BlogPageProps) {
       const updatedPost = await res.json();
 
       // Debug logging to see what we're getting from the API
-      console.log('Updated Post Response:', updatedPost);
-      console.log('Original Post:', post);
+      // console.log('Updated Post Response:', updatedPost);
+      // console.log('Original Post:', post);
 
       // The backend now returns the complete populated post
       setPost(updatedPost);
