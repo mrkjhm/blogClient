@@ -9,9 +9,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import { toast } from "sonner";
 
 import { User } from "@/types/user";
-import { toast } from "sonner";
 
 type UserContextType = {
   isLoggedIn: boolean;
@@ -187,8 +187,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch {
       setError("Failed to fetch profile");
-      setUser(null);
-      setIsLoggedIn(false);
     } finally {
       setIsLoading(false);
     }

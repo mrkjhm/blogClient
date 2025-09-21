@@ -40,7 +40,7 @@ export default function AccountSettingsPage() {
   if (!user) return <Container className="py-10">Not logged in.</Container>;
 
 
-  const token = localStorage.getItem("accessToken")
+  // const token = localStorage.getItem("accessToken")
 
   // 1) Update Name
   const submitName = async (e: React.FormEvent) => {
