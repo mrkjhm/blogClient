@@ -78,7 +78,7 @@ export default function LatestBlog() {
             onMouseLeave={() => setHoveredCard(null)}     // 🆕 Clear hover
             whileHover={{ scale: 1.02 }}
           >
-            <Card className="p-5 hover:scale-102 transition-all duration-300">
+            <Card className="p-5 hover:scale-102 transition-all duration-300 hover:bg-gray-100">
               <Link href={`/posts/${post.slug}`} className="block">
                 <div className="w-full aspect-[16/9] overflow-hidden rounded-lg">
                   <Image
@@ -87,11 +87,11 @@ export default function LatestBlog() {
                     width={600}
                     height={400}
                     className="h-full w-full object-cover hover:scale-105 transition-all duration-300"
-                  />
+                  />                                            
                 </div>
               </Link>
 
-              <CardHeader>
+              <CardHeader>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
                 {post.category && (
                   <CardDescription className="inline-block w-fit py-1 rounded-md text-blue-600 font-bold">
                     {post.category}

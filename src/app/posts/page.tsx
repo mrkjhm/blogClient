@@ -78,7 +78,7 @@ export default function Page() {
                 whileHover={{ scale: 1.02 }}
 
               >
-                <Card className="p-5 relative hover:scale-102 transition-all duration-300">
+                <Card className="p-5 relative hover:scale-102 transition-all duration-300 hover:bg-gray-100">
                   <Link href={`/posts/${post.slug}`} className="block">
                     <div className="w-full aspect-[16/9] overflow-hidden rounded-lg">
                       <Image

@@ -285,7 +285,7 @@ export default function PostPage({ params }: BlogPageProps) {
 
 
             <div className="flex gap-6 items-center text-gray-500">
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-2 items-center">
                 <Avatar>
                   {author?.avatarUrl ? (
                     <AvatarImage
@@ -298,7 +298,7 @@ export default function PostPage({ params }: BlogPageProps) {
                   ) : null}
                   <AvatarFallback>{author?.name?.[0]?.toUpperCase?.() || 'U'}</AvatarFallback>
                 </Avatar>
-                <p className="capitalize">{author?.name || 'Unknown Author'}</p>
+                <p className="capitalize">by: {author?.name || 'Unknown Author'}</p>
               </div>
               <div className="flex gap-3">
                 <p className="text-sm">
