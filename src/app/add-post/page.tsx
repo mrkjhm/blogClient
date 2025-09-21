@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ChangeEvent, type FormEvent,useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import RichMarkdown from "@/components/markdown/RichMarkdown";
@@ -12,7 +12,7 @@ import { useUser } from "../../../contexts/UserContext";
 export default function Page() {
 
   const router = useRouter();
-  const { user, isLoadingUser } = useUser();
+  const { user } = useUser();
 
 
   const [imagePreview, setImagePreview] = useState("");

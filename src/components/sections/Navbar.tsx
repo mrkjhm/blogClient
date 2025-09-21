@@ -8,7 +8,7 @@ import { useUser } from "../../../contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export const Navbar = () => {
-  const { user, isLoadingUser } = useUser();
+  const { user, isLoading } = useUser();
   const pathname = usePathname();
 
   const menu = user
@@ -42,7 +42,7 @@ export const Navbar = () => {
           ))}
 
           {/* Keep layout stable while loading user */}
-          {isLoadingUser ? (
+          {isLoading ? (
             <div className="flex items-center gap-2" style={{ width: 120 }}>
               <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
               <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />

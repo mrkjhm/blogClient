@@ -16,7 +16,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 export default function AccountSettingsPage() {
-  const { user, isLoadingUser, setUser } = useUser();
+  const { user, isLoading } = useUser();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -36,7 +36,7 @@ export default function AccountSettingsPage() {
     }
   }, [user]);
 
-  if (isLoadingUser) return <Container className="py-10">Loading…</Container>;
+  if (isLoading) return <Container className="py-10">Loading…</Container>;
   if (!user) return <Container className="py-10">Not logged in.</Container>;
 
 
@@ -168,8 +168,8 @@ export default function AccountSettingsPage() {
       if (!res.ok) throw new Error(data?.message || "Change password failed");
 
       // tokens may rotate
-      if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
-      if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
+      // if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
+      // if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
 
       toast.success("Password changed");
       setPwdCurrent(""); setPwdNew(""); setPwdConfirm("");
