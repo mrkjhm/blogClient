@@ -65,8 +65,8 @@ export default function Hero() {
                     </Link>
                   </h1>
                   <p>{post.description}</p>
-                  <div className="flex gap-3 items-center mt-4 text-gray-500">
-                    <div className="flex gap-2 items-center">
+                  <div className="flex gap-4 items-center mt-4 text-gray-500">
+                    <div className="flex gap-3 items-center">
                       <div className="h-10 w-10 items-center flex justify-center rounded-full overflow-hidden bg-gray-100">
                         <Avatar>
                           <AvatarImage
@@ -77,7 +77,7 @@ export default function Hero() {
                           <AvatarFallback>{typeof post.author === 'object' ? post.author.name?.[0]?.toUpperCase?.() : 'Unknown'}</AvatarFallback>
                         </Avatar>
                       </div>
-                      <p>by: <span className="capitalize">{typeof post.author === "object" && post.author ? post.author.name : "Unknown Author"}</span></p>
+                      <p><span className="capitalize">{typeof post.author === "object" && post.author ? post.author.name : "Unknown Author"}</span></p>
                     </div>
                     <p className="text-sm">
                       <i className="ri-calendar-line mr-2"></i>

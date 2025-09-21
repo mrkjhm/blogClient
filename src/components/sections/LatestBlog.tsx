@@ -138,7 +138,7 @@ export default function LatestBlog() {
                     </Avatar>
                   </div>
                   <p className="text-sm">
-                    by: <span className="capitalize">
+                    <span className="capitalize">
                       {typeof post.author === "object" && post.author ? post.author.name : "Unknown Author"}
                     </span>
                   </p>

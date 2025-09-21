@@ -159,7 +159,7 @@ export default function Page() {
               <RichMarkdown value={content} onChange={setContent} />
             </div>
 
-            <button type="submit" className="bg-primary w-full py-3 text-white rounded-md">
+            <button type="submit" className=" w-full py-3  rounded-md cursor-pointer border hover:bg-primary hover:text-white transition duration-300">
               Create Post
             </button>
           </form>
