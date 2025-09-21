@@ -30,7 +30,6 @@ export default function ReplyButton({
 
   const { user } = useUser();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
-  const token = localStorage.getItem("accessToken");
 
   const submit = async () => {
     if (!text.trim()) return;
@@ -52,9 +51,9 @@ export default function ReplyButton({
         `${API_URL}/api/comments/${postId}/replies/${parentId}`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ comment: text.trim(), parentId }),
         }

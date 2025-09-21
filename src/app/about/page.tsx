@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,11 +10,15 @@ import LogoutButton from "@/components/ui/LogoutButton";
 import { useUser } from "../../../contexts/UserContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const TOKEN_KEY = "access";
-const REFRESH_KEY = "refresh";
+// const TOKEN_KEY = "access";
+// const REFRESH_KEY = "refresh";
+
+
 
 export default function AccountSettingsPage() {
   const { user, isLoadingUser, setUser } = useUser();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // local state
   const [name, setName] = useState("");
@@ -45,9 +49,9 @@ export default function AccountSettingsPage() {
     try {
       const res = await fetch(`${API_URL}/api/users/${user._id}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ name: name }),
       });
@@ -59,7 +63,6 @@ export default function AccountSettingsPage() {
       }
 
       if (!res.ok) throw new Error(data?.message || "Update failed");
-      setUser(data.user ?? data);
       toast.success("Name updated");
     } catch (err: any) {
       toast.error(err?.message || "Update failed");
@@ -69,15 +72,20 @@ export default function AccountSettingsPage() {
   // 2) Update Avatar
   const submitAvatar = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!avatarUrl) return;
+
     try {
       const fd = new FormData();
+
       fd.append("avatarUrl", avatarUrl);
+
       const res = await fetch(`${API_URL}/api/users/${user._id}/avatar`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }, // no Content-Type
+        credentials: "include",
         body: fd,
       });
+
       const data = await res.json();
 
       if (res.status === 401 || res.status === 403) {
@@ -85,10 +93,14 @@ export default function AccountSettingsPage() {
         return;
       }
 
-
       if (!res.ok) throw new Error(data?.message || "Upload failed");
-      setUser(data.user ?? data);
+
       setAvatarUrl(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
       toast.success("Avatar updated");
     } catch (err: any) {
       toast.error(err?.message || "Upload failed");
@@ -101,9 +113,9 @@ export default function AccountSettingsPage() {
     try {
       const res = await fetch(`${API_URL}/api/users/${user._id}/change-email`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ password: emailPwd, newEmail: emailNew.trim().toLowerCase() }),
       });
@@ -117,8 +129,6 @@ export default function AccountSettingsPage() {
       if (!res.ok) throw new Error(data?.message || "Change email failed");
 
       // tokens may rotate
-      if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
-      if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
 
       // backend doesn’t always return user; optionally refetch /me here if needed
       toast.success("Email changed. Please verify your email if required.");
@@ -138,9 +148,9 @@ export default function AccountSettingsPage() {
     try {
       const res = await fetch(`${API_URL}/api/users/${user._id}/change-password`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           currentPassword: pwdCurrent,
@@ -187,7 +197,7 @@ export default function AccountSettingsPage() {
               <AvatarFallback>{user.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
             </Avatar>
             <form onSubmit={submitAvatar} className="flex items-center gap-3">
-              <input type="file" accept="image/*" onChange={(e) => setAvatarUrl(e.target.files?.[0] ?? null)} />
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={(e) => setAvatarUrl(e.target.files?.[0] ?? null)} />
               <button
                 type="submit"
                 disabled={!avatarUrl}

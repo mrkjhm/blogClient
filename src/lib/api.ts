@@ -30,6 +30,7 @@ export async function fetchComments(postId: string): Promise<CommentNode[]> {
 export async function addComment(postId: string, comment: string, token?: string) {
   return getJSON<{ message: string }>(`/api/comments/${postId}`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -41,6 +42,7 @@ export async function addComment(postId: string, comment: string, token?: string
 export async function addReply(postId: string, parentId: string, comment: string, token?: string) {
   return getJSON<{ message: string }>(`/api/comments/${postId}/replies/${parentId}`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

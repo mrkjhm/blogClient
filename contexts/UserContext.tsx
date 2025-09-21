@@ -1,188 +1,246 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
 import { User } from "@/types/user";
+import { toast } from "sonner";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
-const TOKEN_KEY = "accessToken";
-const REFRESH_KEY = "refreshToken"
-
-// Types
-
-
-interface UserContextType {
+type UserContextType = {
+  isLoggedIn: boolean;
   user: User | null;
-  isLoadingUser: boolean;
+  isLoading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, avatar: File) => Promise<void>;
-  logout: () => void;
-  setUser: (user: User | null) => void;
-}
+  logout: () => Promise<void>;
+  getProfile: () => Promise<void>;
+  register: (name: string, email: string, password: string, confirmPassowrd: string, avatarUrl: File,) => Promise<void>;
+  fetchWithRefresh: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+};
 
-// Create context
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const UserContext = createContext<UserContextType>({
+  isLoggedIn: false,
+  user: null,
+  isLoading: false,
+  error: null,
+  login: async () => { },
+  logout: async () => { },
+  getProfile: async () => { },
+  register: async () => { },
+  fetchWithRefresh: async () => new Response(),
+});
 
-// Provider
-export function UserProvider({ children }: { children: ReactNode }) {
+export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    setUser(null);
-    console.log("🔓 Logged out, tokens cleared");
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${API_URL}/api/users/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      let message = res.statusText || "Login failed";
-      try {
-        const err = await res.json();
-        if (err && typeof err === "object" && "message" in err) {
-          message = (err as { message?: string }).message || message;
-        }
-      } catch { void 0 }
-      throw new Error(message);
+    // Basic validation
+    setIsLoading(true);  // Show loading spinner
+    setError(null);
+    if (!email || !password) {
+      throw new Error("Email and password are required");
     }
 
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_URL}/api/users/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
-    if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
-    if (data.user) setUser(data.user);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      setUser(data.user);
+      setIsLoggedIn(true);
+      router.push("/");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+        throw err;
+      } else {
+        setError("Login failed");
+        throw new Error("Login failed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    setIsLoading(true);
+
+    try {
+      await fetch(`${API_URL}/api/users/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      setUser(null);
+      setIsLoggedIn(false);
+      router.push("/login");
+    } catch {
+      setError("Logout failed");
+      setUser(null);
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const register = async (
     name: string,
     email: string,
     password: string,
+    confirmPassword: string,
     avatarUrl: File
   ) => {
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("avatarUrl", avatarUrl);
-
-    const res = await fetch(`${API_URL}/api/users/register`, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Registration failed")
-    }
-
-    await login(email, password);
-
-
-    const data = await res.json();
-    if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
-    if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
-    if (data) setUser(data); // depends if your response includes user
-  }
-
-
-  const refreshAccessToken = async (): Promise<string | null> => {
-    const refreshToken = localStorage.getItem(REFRESH_KEY);
-    if (!refreshToken) return null;
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/users/refresh-token`, {
+
+      const formData = new FormData();
+
+      formData.append("name", name)
+      formData.append("email", email)
+      formData.append("password", password)
+      formData.append("confirmPassword", confirmPassword)
+      formData.append("avatarUrl", avatarUrl)
+
+      const res = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
+        body: formData
       });
 
-      if (!res.ok) throw new Error("Refresh token invalid");
-
       const data = await res.json();
-      localStorage.setItem(TOKEN_KEY, data.accessToken);
-      localStorage.setItem(REFRESH_KEY, data.refreshToken); // Optional, in case it rotated
-      return data.accessToken;
-    } catch (err) {
-      console.error("⚠️ Failed to refresh token:", err);
-      logout();
-      return null;
+
+      if (!res.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      // setUser(data);
+      // setIsLoggedIn(true);
+
+      toast.success("Registration successful! 🎉");
+      router.push("/login"); // or "/login" kung gusto mo muna dumaan sa login page
+
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Registration error");
+        toast.error(err.message);
+      } else {
+        setError("Register failed")
+        // throw new Error("Register failed");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
+  const getProfile = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-    const loadUser = async () => {
-      let token = localStorage.getItem(TOKEN_KEY);
+    try {
+      let res = await fetch(`${API_URL}/api/users/me`, { credentials: "include" });
 
-      const fetchMe = async (tokenToUse: string) => {
-        const res = await fetch(`${API_URL}/api/users/me`, {
-          headers: { Authorization: `Bearer ${tokenToUse}` },
-          signal: controller.signal,
+      if (res.status === 401) {
+        // 🔑 try refresh
+        const refreshRes = await fetch(`${API_URL}/api/users/refresh-token`, {
+          method: "POST",
+          credentials: "include",
         });
 
-        if (!res.ok) throw new Error("Access token invalid");
-
-        const data = await res.json();
-        if (isMounted) setUser(data.user);
-      };
-
-      try {
-        if (!token) throw new Error("Missing token");
-        await fetchMe(token);
-      } catch {
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          try {
-            await fetchMe(newToken);
-          } catch {
-            logout();
-          }
-        } else {
-          logout();
+        if (refreshRes.ok) {
+          // retry profile after refresh
+          res = await fetch(`${API_URL}/api/users/me`, { credentials: "include" });
         }
-      } finally {
-        if (isMounted) setIsLoadingUser(false);
       }
-    };
 
-    loadUser();
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, []);
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        setIsLoggedIn(true);
+      } else {
+        setUser(null);
+        setIsLoggedIn(false);
+      }
+    } catch {
+      setError("Failed to fetch profile");
+      setUser(null);
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [API_URL]);
 
-  const value = useMemo(
-    () => ({ user, isLoadingUser, login, register, logout, setUser }),
-    [user, isLoadingUser]
-  );
+
+  const fetchWithRefresh = async (
+    input: RequestInfo,
+    init?: RequestInit
+  ): Promise<Response> => {
+    let res = await fetch(input, { ...init, credentials: "include" });
+
+    if (res.status === 401) {
+      // try refresh
+      const refreshRes = await fetch(`${API_URL}/api/users/refresh-token`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (refreshRes.ok) {
+        // retry original request
+        res = await fetch(input, { ...init, credentials: "include" });
+      } else {
+        await logout(); // force logout if refresh also fails
+      }
+    }
+
+    return res;
+  };
+
+
+  useEffect(() => {
+    getProfile();
+  }, [getProfile]);
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider
+      value={{
+        isLoggedIn,
+        user,
+        isLoading,
+        error,
+        login,
+        logout,
+        getProfile,
+        register,
+        fetchWithRefresh,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
-}
+};
 
-// Hook
-export function useUser() {
-  const context = useContext(UserContext);
-  if (!context) throw new Error("useUser must be used within UserProvider");
-  return context;
-}
+export const useUser = () => useContext(UserContext);

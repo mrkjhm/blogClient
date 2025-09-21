@@ -67,6 +67,7 @@ export default function Page() {
 
     const res = await fetch(`${API_URL}/api/posts`, {
       method: "POST",
+      credentials: "include",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });

@@ -29,26 +29,15 @@ export default function PostActions({ post, className, showEdit = true, onDelete
     (typeof post.author === 'string' && user._id === post.author)
   );
 
-  // Debug logging
-  console.log('PostActions Debug:', {
-    user: user ? { id: user._id, isAdmin: user.isAdmin } : null,
-    postAuthor: post.author,
-    canModify
-  });
-
   if (!canModify) return null;
 
   const onDelete = async () => {
-
-    const token = localStorage.getItem("accessToken")
 
     try {
       setLoading(true);
       const res = await fetch(`${API_URL}/api/posts/${post._id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.message || "Delete failed");

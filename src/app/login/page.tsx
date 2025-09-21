@@ -8,18 +8,18 @@ import { useUser } from '../../../contexts/UserContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, user, isLoadingUser } = useUser(); // ✅ use login from context
+  const { login, user, isLoading } = useUser(); // ✅ use login from context
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!isLoadingUser && user) {
-      router.push("/")
-    }
+  // useEffect(() => {
+  //   if (!isLoading && user) {
+  //     router.push("/")
+  //   }
 
-  }, [user, isLoadingUser, router])
+  // }, [user, isLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +27,6 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      toast.success('login successful'); // ✅ call login from context
-      router.push('/');        // ✅ redirect after successful login
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login error';
       setError(message);

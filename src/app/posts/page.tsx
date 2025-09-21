@@ -15,7 +15,7 @@ export default function Page() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 9;
   const [hoveredCard, setHoveredCard] = useState<string | null>(null); // 🆕 Track hovered card
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -24,7 +24,7 @@ export default function Page() {
     const fetchPosts = async () => {
       try {
         const result = await axios.get<Post[]>(
-          `${API_URL}/api/posts`
+          `${API_URL}/api/posts`,
         );
         setPosts(result.data);
       } catch (err: unknown) {

@@ -21,7 +21,7 @@ export default function EditButton({
 }: Props) {
   const [text, setText] = useState(initial);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem("accessToken");
+  // const token = localStorage.getItem("accessToken");
 
   // Notify parent when state changes
   const handleStateChange = (newState: boolean) => {
@@ -38,9 +38,9 @@ export default function EditButton({
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/${commentId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ comment: text.trim() }),
         }

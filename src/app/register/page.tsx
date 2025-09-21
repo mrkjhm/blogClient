@@ -1,14 +1,14 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { useUser } from "../../../contexts/UserContext";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, user, isLoadingUser } = useUser();
+  const { register, user, isLoading } = useUser();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,11 +17,11 @@ export default function RegisterPage() {
   const [avatarUrl, setAvatarUrl] = useState<File | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!isLoadingUser && user) {
-      router.push("/")
-    }
-  }, [user, isLoadingUser, router])
+  // useEffect(() => {
+  //   if (!isLoading && user) {
+  //     router.push("/")
+  //   }
+  // }, [user, isLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,11 +33,13 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(name, email, password, avatarUrl);
-      router.push('/')
+      await register(name, email, password, confirmPassword, avatarUrl);
 
-    } catch (err: any) {
-      setError(err.message || "Registration Failed")
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registtration failed';
+      setError(message);
+      toast.error(message);
     }
 
   }

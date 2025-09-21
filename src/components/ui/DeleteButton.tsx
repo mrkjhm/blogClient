@@ -25,6 +25,7 @@ export default function DeleteButton({
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/${commentId}`,
         {
           method: "DELETE",
+          credentials: "include",
           headers: {
             Authorization: `Bearer ${token}`,
           },
